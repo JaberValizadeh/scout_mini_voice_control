@@ -1,0 +1,58 @@
+<launch>
+  <!-- The robot and its world, with no voice stack: a Scout in an empty Gazebo
+       world, ros_control up, driving from /cmd_vel.
+
+       Run this first, then voice_control.launch in a second terminal. Starting
+       the two halves separately keeps the voice nodes restartable (retune a
+       speed, change the mic) without disturbing the simulation.
+
+       This is the half that must not be launched twice: a second instance
+       evicts these nodes, and the displaced controller_spawner unloads every
+       wheel controller on its way out, leaving a robot that hears commands but
+       cannot move. voice_control.launch is safe to restart freely. -->
+
+  <!-- Which chassis to spawn: scout_mini or scout_v2. Both present the same
+       /cmd_vel and /odom interface, so the voice stack is unchanged either
+       way; they differ in geometry and in how fast they are allowed to go. -->
+  <arg name="robot"        default="scout_mini" />
+
+  <!-- Reject anything else up front. Both spawn groups below are conditional,
+       so an unrecognised name would otherwise match neither and bring up an
+       empty launch: no Gazebo, no robot, and no error explaining why.
+       Looking the name up in this dict validates it: a valid name maps to
+       itself, anything else raises KeyError naming the offending value and the
+       launch stops. (roslaunch forbids double-underscore expressions in
+       $(eval ...), so raising a nicer error is not available here.) -->
+  <arg name="robot_checked"
+       value="$(eval {'scout_mini': 'scout_mini', 'scout_v2': 'scout_v2'}[robot])" />
+
+  <arg name="gui"          default="true" />
+  <arg name="paused"       default="false" />
+  <arg name="world_name"   default="worlds/empty.world" />
+  <arg name="x"            default="0.0" />
+  <arg name="y"            default="0.0" />
+  <arg name="track_factor" default="1.27" />
+
+  <group if="$(eval arg('robot_checked') == 'scout_mini')">
+    <include file="$(find scout_gazebo)/launch/scout_mini_empty_world.launch">
+      <arg name="gui"          value="$(arg gui)" />
+      <arg name="paused"       value="$(arg paused)" />
+      <arg name="world_name"   value="$(arg world_name)" />
+      <arg name="x"            value="$(arg x)" />
+      <arg name="y"            value="$(arg y)" />
+      <arg name="track_factor" value="$(arg track_factor)" />
+    </include>
+  </group>
+
+  <group if="$(eval arg('robot_checked') == 'scout_v2')">
+    <include file="$(find scout_gazebo)/launch/scout_empty_world.launch">
+      <arg name="gui"          value="$(arg gui)" />
+      <arg name="paused"       value="$(arg paused)" />
+      <arg name="world_name"   value="$(arg world_name)" />
+      <arg name="x"            value="$(arg x)" />
+      <arg name="y"            value="$(arg y)" />
+      <arg name="track_factor" value="$(arg track_factor)" />
+    </include>
+  </group>
+
+</launch>

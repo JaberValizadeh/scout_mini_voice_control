@@ -1,0 +1,29 @@
+<launch>
+  <!-- Voice control driving the Scout Mini in Gazebo: spawns the robot in an
+       empty world and starts the voice stack against it. -->
+
+  <arg name="robot"            default="scout_mini"/>   <!-- scout_mini | scout_v2 -->
+  <arg name="gui"              default="true"/>
+  <arg name="device"           default="default"/>
+  <arg name="gain"             default="2.0"/>
+  <arg name="command_timeout"  default="0.0"/>
+
+  <!-- WARNING: never run this launch file twice at once. The second instance
+       evicts the first's nodes, and the displaced controller_spawner unloads
+       every wheel controller on its way out, leaving a robot that recognizes
+       speech but cannot move. A guard node inside this file cannot prevent it
+       (roslaunch starts nodes concurrently, so the damage is done before the
+       guard can abort); use scripts/start_sim.sh, which checks first. -->
+
+  <include file="$(find scout_mini_voice_control)/launch/environment.launch">
+    <arg name="robot" value="$(arg robot)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>
+
+  <include file="$(find scout_mini_voice_control)/launch/voice_control.launch">
+    <arg name="robot" value="$(arg robot)"/>
+    <arg name="device" value="$(arg device)"/>
+    <arg name="gain" value="$(arg gain)"/>
+    <arg name="command_timeout" value="$(arg command_timeout)"/>
+  </include>
+</launch>

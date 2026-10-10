@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>scout_mini_voice_control</name>
+  <version>0.1.0</version>
+  <description>
+    Voice control for the AgileX Scout Mini. Recognizes spoken commands offline
+    with Vosk and publishes velocity commands on /cmd_vel.
+  </description>
+
+  <maintainer email="valizadeh.au@gmail.com">Jaber Valizadeh</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+
+  <export>
+  </export>
+</package>

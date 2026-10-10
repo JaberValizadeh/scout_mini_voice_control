@@ -1,0 +1,46 @@
+<launch>
+  <!-- Voice control for the Scout Mini. Brings up the recognizer and the
+       teleop mapper; the robot itself (sim or hardware) is launched separately.
+       See sim.launch to run this against the Gazebo Scout Mini. -->
+
+  <!-- ALSA capture device for the microphone, e.g. "default" or "hw:0,0" -->
+  <arg name="device" default="default"/>
+  <!-- Path to the Vosk model directory (defaults to the one shipped in this package) -->
+  <arg name="model_path" default="$(find scout_mini_voice_control)/models/vosk-model-small-en-us-0.15"/>
+  <!-- Stop the robot if no command is heard for this many seconds (0 = keep last command) -->
+  <arg name="command_timeout" default="0.0"/>
+  <!-- Software mic amplification (1.0 = none); raise if your mic is quiet -->
+  <arg name="gain" default="2.0"/>
+  <!-- rad/s ceiling for the closed-loop 90/180-degree turns -->
+  <arg name="max_turn_speed" default="0.25"/>
+
+  <!-- Which chassis is being driven: scout_mini or scout_v2. Only affects the
+       speed ceilings below; the command mapping is identical. The V2 is the
+       slower machine (about 1.5 m/s and 0.79 rad/s against the Mini's 3.0 and
+       2.5), so letting 'faster' run to the Mini's ceiling would ask for
+       rotation the real V2 cannot deliver. -->
+  <arg name="robot" default="scout_mini"/>
+  <arg name="max_linear_speed"  default="1.5"/>
+  <arg name="max_angular_speed" default="$(eval 2.0 if arg('robot') == 'scout_mini' else 0.78)"/>
+
+  <node pkg="scout_mini_voice_control" type="voice_recognizer.py" name="voice_recognizer" output="screen">
+    <param name="device" value="$(arg device)"/>
+    <param name="model_path" value="$(arg model_path)"/>
+    <param name="use_grammar" value="true"/>
+    <param name="gain" value="$(arg gain)"/>
+  </node>
+
+  <node pkg="scout_mini_voice_control" type="voice_teleop.py" name="voice_teleop" output="screen">
+    <!-- Start speeds chosen so 'faster' (x3) stays inside the ceilings below -->
+    <param name="linear_speed" value="0.3"/>
+    <param name="angular_speed" value="0.6"/>
+    <!-- Below the Mini's hardware limits (~3.0 m/s, ~2.5 rad/s) on purpose -->
+    <param name="max_linear_speed" value="$(arg max_linear_speed)"/>
+    <param name="max_angular_speed" value="$(arg max_angular_speed)"/>
+    <!-- Ceiling for the measured 90/180-degree turns. Slow on purpose: the
+         turns close the loop on wheel odometry, which cannot see the sideways
+         scrub of a skid-steer chassis. See README. -->
+    <param name="max_turn_speed" value="$(arg max_turn_speed)"/>
+    <param name="command_timeout" value="$(arg command_timeout)"/>
+  </node>
+</launch>
